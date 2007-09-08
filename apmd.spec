@@ -1,35 +1,35 @@
-%define name apmd
-%define lib_name_orig libapm
-%define lib_major 1
-%define lib_name %mklibname apm %{lib_major}
+%define name		apmd
+%define libname_orig	libapm
+%define major		1
+%define libname		%mklibname apm %{major}
+%define develname	%mklibname apm -d
 
-%define release %mkrel 12
-%define version 3.2.2
-%define url http://www.worldvisions.ca/~apenwarr/apmd/
+%define release	%mkrel 13
+%define version	3.2.2
 
-Summary: Advanced Power Management (APM) BIOS utilities for laptops
-Name: %{name}
-Version: %{version}
-Release: %{release}
-Source: ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.bz2
-Source1: apmd.init
-Source3: apmd_proxy
-Patch0: apmd-3.2.2.orig-lib64.patch
-Patch1: apmd-3.2.2.orig-graphicswitch.patch
-Patch2: apmd-3.1.0.orig-optimization.patch
-Patch5: apmd-3.2.2.orig-security.patch
-Patch9: apmd-3.2.2.orig-proxy-timeout.patch
-License: GPL
-Group: System/Servers
+Summary:	Advanced Power Management (APM) BIOS utilities for laptops
+Name:		%{name}
+Version:	%{version}
+Release:	%{release}
+Source:		ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.bz2
+Source1:	apmd.init
+Source3:	apmd_proxy
+Patch0:		apmd-3.2.2.orig-lib64.patch
+Patch1:		apmd-3.2.2.orig-graphicswitch.patch
+Patch2:		apmd-3.1.0.orig-optimization.patch
+Patch5:		apmd-3.2.2.orig-security.patch
+Patch9:		apmd-3.2.2.orig-proxy-timeout.patch
+License:	GPLv2+
+Group:		System/Servers
 BuildRequires:	X11-devel libxaw-devel
 BuildRequires:	libtool
-BuildRoot: %{_tmppath}/%{name}-root
-Requires: common-licenses
-Requires(post): rpm-helper
-Requires(preun): rpm-helper
-Requires: initscripts >= 5.5
-ExclusiveArch: %{ix86} x86_64 ppc
-Url: %{url}
+BuildRoot:	%{_tmppath}/%{name}-root
+
+Requires(post):		rpm-helper
+Requires(preun):	rpm-helper
+
+Requires:	initscripts >= 5.5
+ExclusiveArch:	%{ix86} x86_64 ppc
 
 %description
 APMD is a set of programs for controlling the Advanced Power 
@@ -41,26 +41,27 @@ down the PCMCIA sockets before a suspend.
 Install the apmd package if you need to control the APM system 
 on your laptop.
 
-%package -n %{lib_name}
-Summary: Main library for %{lib_name_orig}
-Group: System/Libraries
-Provides: %{lib_name_orig} = %{version}-%{release}
+%package -n %{libname}
+Summary:	Main library for %{libname_orig}
+Group:		System/Libraries
+Provides:	%{libname_orig} = %{version}-%{release}
 
-%description -n %{lib_name}
+%description -n %{libname}
 This package contains the library needed to run programs dynamically
-linked with %{lib_name_orig}.
+linked with %{libname_orig}.
 
-%package -n %{lib_name}-devel
-Summary: Development library for %{lib_name_orig}
-Group: Development/C
-Requires: %{lib_name} = %{version}
-Provides: %{lib_name_orig}-devel = %{version}-%{release}
-Obsoletes: %{name}-devel
-Provides: %{name}-devel
+%package -n %{develname}
+Summary:	Development library for %{libname_orig}
+Group:		Development/C
+Requires:	%{libname} = %{version}
+Provides:	%{libname_orig}-devel = %{version}-%{release}
+Obsoletes:	%{name}-devel
+Obsoletes:	%{mklibname apm 1 -d}
+Provides:	%{name}-devel
 
-%description -n %{lib_name}-devel
+%description -n %{develname}
 This package contains the developmeent library needed to compile
-programs that use %{lib_name_orig}.
+programs that use %{libname_orig}.
 
 %prep
 %setup -q -n apmd-%{version}.orig
@@ -91,8 +92,8 @@ rm -f $RPM_BUILD_ROOT%{_bindir}/on_ac_power
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post -n %{lib_name} -p /sbin/ldconfig
-%postun -n %{lib_name} -p /sbin/ldconfig
+%post -n %{libname} -p /sbin/ldconfig
+%postun -n %{libname} -p /sbin/ldconfig
 
 %post 
 %_post_service apmd
@@ -105,20 +106,19 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README apmsleep.README
+%doc AUTHORS ChangeLog README apmsleep.README
 %{_mandir}/man?/*
 %{_bindir}/*
 %{_sbindir}/*
 %config(noreplace) %{_initrddir}/apmd
 
-%files -n %{lib_name}
+%files -n %{libname}
 %defattr(-,root,root)
 %{_libdir}/*.so.*
 
-%files -n %{lib_name}-devel
+%files -n %{develname}
 %defattr(-,root,root)
 %{_libdir}/*so
 %{_libdir}/*a
 %{_includedir}/*
-
 
