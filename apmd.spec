@@ -23,7 +23,6 @@ License:	GPLv2+
 Group:		System/Servers
 BuildRequires:	X11-devel libxaw-devel
 BuildRequires:	libtool
-BuildRoot:	%{_tmppath}/%{name}-root
 
 Requires(post):		rpm-helper
 Requires(preun):	rpm-helper
