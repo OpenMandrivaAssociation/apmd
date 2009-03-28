@@ -16,7 +16,7 @@ Source1:	apmd.init
 Source3:	apmd_proxy
 Patch0:		apmd-3.2.2.orig-lib64.patch
 Patch1:		apmd-3.2.2.orig-graphicswitch.patch
-Patch2:		apmd-3.1.0.orig-optimization.patch
+Patch2:		apmd-3.2.2.orig-optimization.patch
 Patch5:		apmd-3.2.2.orig-security.patch
 Patch9:		apmd-3.2.2.orig-proxy-timeout.patch
 License:	GPLv2+
@@ -74,7 +74,7 @@ echo "LIB = %_lib" > config.make
 
 %build
 %serverbuild
-make CFLAGS="$RPM_OPT_FLAGS" LDFLAGS=-s PROXY_DIR=%{_sbindir}
+make CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{ldflags} -s" PROXY_DIR=%{_sbindir}
 
 %install
 rm -rf $RPM_BUILD_ROOT
