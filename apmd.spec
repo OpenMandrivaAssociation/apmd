@@ -4,7 +4,7 @@
 %define libname		%mklibname apm %{major}
 %define develname	%mklibname apm -d
 
-%define release	%mkrel 18
+%define release	%mkrel 19
 %define version	3.2.2
 
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
@@ -29,7 +29,7 @@ Requires(post):		rpm-helper
 Requires(preun):	rpm-helper
 
 Requires:	initscripts >= 5.5
-ExclusiveArch:	%{ix86} x86_64 ppc
+ExclusiveArch:	%{ix86} x86_64 ppc %mips %arm
 
 %description
 APMD is a set of programs for controlling the Advanced Power 
