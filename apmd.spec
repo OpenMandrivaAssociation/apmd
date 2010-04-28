@@ -4,7 +4,7 @@
 %define libname		%mklibname apm %{major}
 %define develname	%mklibname apm -d
 
-%define release	%mkrel 21
+%define release	%mkrel 22
 %define version	3.2.2
 
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
