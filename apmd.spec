@@ -21,7 +21,9 @@ Patch5:		apmd-3.2.2.orig-security.patch
 Patch9:		apmd-3.2.2.orig-proxy-timeout.patch
 License:	GPLv2+
 Group:		System/Servers
-BuildRequires:	X11-devel libxaw-devel
+BuildRequires:	libx11-devel
+BuildRequires:	libxaw-devel
+BuildRequires:	libxt-devel
 BuildRequires:	libtool
 BuildRoot:	%{_tmppath}/%{name}-root
 
