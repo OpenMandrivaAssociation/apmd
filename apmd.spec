@@ -79,20 +79,20 @@ echo "LIB = %_lib" > config.make
 make CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{ldflags} -s" PROXY_DIR=%{_sbindir}
 
 %install
-rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/apm-scripts
+rm -rf %{buildroot}
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/apm-scripts
 
 %makeinstall_std PREFIX=%{_prefix} MANDIR=%{_mandir}
 
-for i in apm.1 apmsleep.1;do install -m644 $i -D $RPM_BUILD_ROOT/%{_mandir}/man1/$i;done
-install -m644 apmd.8 -D $RPM_BUILD_ROOT/%{_mandir}/man8/apmd.8
+for i in apm.1 apmsleep.1;do install -m644 $i -D %{buildroot}/%{_mandir}/man1/$i;done
+install -m644 apmd.8 -D %{buildroot}/%{_mandir}/man8/apmd.8
 
-install -m755 %{SOURCE1} -D $RPM_BUILD_ROOT%{_initrddir}/apmd
-install -m755 %{SOURCE3} -D $RPM_BUILD_ROOT%{_sbindir}/apmd_proxy
-rm -f $RPM_BUILD_ROOT%{_bindir}/on_ac_power
+install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/apmd
+install -m755 %{SOURCE3} -D %{buildroot}%{_sbindir}/apmd_proxy
+rm -f %{buildroot}%{_bindir}/on_ac_power
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %if %mdkversion < 200900
 %post -n %{libname} -p /sbin/ldconfig
