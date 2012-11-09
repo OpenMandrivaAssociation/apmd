@@ -1,0 +1,160 @@
+--- ./apmd.8.graph	2004-01-04 10:38:17.000000000 +0100
++++ ./apmd.8	2005-02-01 15:14:33.048521972 +0100
+@@ -32,13 +32,14 @@
+ apmd \- Advanced Power Management (APM) daemon
+ .SH SYNOPSIS
+ .BI "apmd"
+-.BI "[ \-TVWciqv ]"
++.BI "[ \-TVWciqvg ]"
+ .BI "[ \-P " program " ]"
+ .BI "[ \-T " seconds " ]"
+ .BI "[ \-c " seconds " ]
+ .BI "[ \-p " percent " ]"
+ .BI "[ \-v " level " ]
+ .BI "[ \-w " percent " ]
++.BI "[ \-g " graphic_switch " ]
+ .SH DESCRIPTION
+ .B apmd
+ is an monitoring daemon for the Advanced Power Management (APM) subsystem.
+@@ -253,6 +254,10 @@
+ The default warning level is 10.
+ Use a negative value to disable this feature.
+ .TP
++.B \-g, \-\-graphic_switch
++Enables the switch to the first console when the current console is in
++graphic mode on suspend events and the switch back on resume events.
++.TP
+ .B \-h, \-\-help
+ Causes
+ .B apmd
+--- ./apmd.c.graph	2004-04-30 06:29:47.000000000 +0200
++++ ./apmd.c	2005-02-01 19:03:20.149133490 +0100
+@@ -152,6 +152,7 @@
+ static char *proxy_name = DEFAULT_PROXY_NAME;
+ static int proxy_timeout = -1; /* -1=never */
+ static int wall; /* = 0 */
++static int graphic_switch = 0;
+ static int check_interval = -1; /* -1=infinity */
+ static int ignore_bios_batlow; /* = 0 */
+ static int percent_change = 5;
+@@ -195,7 +196,7 @@
+ {
+ 	fprintf(
+ 		fd,
+-		"Usage: apmd [-TVWciqv] [-P cmd] [-T seconds] [-c seconds]"
++		"Usage: apmd [-TVWciqvg] [-P cmd] [-T seconds] [-c seconds]"
+ 		" [-p percent] [-v level] [-w percent] [--help]\n"
+ 
+ 	);
+@@ -479,6 +480,8 @@
+ 
+ 	APMD_SYSLOG(LOG_NOTICE, "Suspending now");
+ 
++	if (graphic_switch) apm_suspend_vt();
++
+ 	sync();
+ 	sleep(0);  /* let syslogd write messages */
+ 	sync();
+@@ -487,6 +490,7 @@
+ 
+ 	if (result == -EBUSY) {
+ 		APMD_SYSLOG(LOG_NOTICE, "Suspension was rejected by the kernel, so resuming");
++		if (graphic_switch) apm_resume_vt();
+ 		call_proxy(APM_NORMAL_RESUME);
+ 	}
+ 
+@@ -599,6 +603,7 @@
+ 		case APM_STANDBY_RESUME: apmd_log_event(event, "Standby Resume"); break;
+ 		}
+ 		call_proxy(event);
++		if (graphic_switch) apm_resume_vt();
+ 		do_log_batstatus = 1;
+ 		do_mark = 1;
+ 		suppress_bios_batlow = 0;
+@@ -958,6 +963,7 @@
+ 		{"proxy_timeout", optional_argument, NULL, 'T'},
+ 		{"apmd-proxy-timeout", optional_argument, NULL, 'T'},
+ 		{"apmd_proxy_timeout", optional_argument, NULL, 'T'},
++		{"graphic_switch", no_argument, NULL, 'g'},
+ 		{"version", no_argument, NULL, 'V'},
+ 		{"wall", no_argument, NULL, 'W'},
+ 		{"check", optional_argument, NULL, 'c'},
+@@ -1014,6 +1020,9 @@
+ 			if (proxy_timeout < 0)
+ 				proxy_timeout = -1; /* "never" */
+ 			break;
++		case 'g':
++		  ++graphic_switch;
++		  break;
+ 		case 'V':
+ 			fprintf(stderr, "apmd version %s\n", VERSION);
+ 			exit(0);
+--- ./apm.h.graph	2003-01-16 22:50:36.000000000 +0100
++++ ./apm.h	2005-02-01 15:11:03.147431433 +0100
+@@ -87,6 +87,8 @@
+ extern const char *apm_time(time_t t);
+ extern const char *apm_delta_time(time_t then, time_t now);
+ extern const char *apm_time_nosec(time_t t);
++extern int apm_resume_vt(void);
++extern int apm_suspend_vt(void);
+ 
+ #ifdef APM_IOC_REJECT
+ extern int apm_reject(int fd);
+--- ./apmlib.c.graph	2004-01-04 08:23:08.000000000 +0100
++++ ./apmlib.c	2005-02-01 15:11:03.150431491 +0100
+@@ -249,6 +249,55 @@
+     return retcode;
+ }
+ 
++#include <linux/vt.h>
++#include <linux/kd.h>
++
++static int	suspendVT;
++static int	suspendVTValid;
++
++int apm_suspend_vt()
++{
++    int		    fd;
++    struct vt_stat  vts;
++    int		    mode;
++
++    suspendVTValid = 0;
++    fd = open ("/dev/tty0", O_WRONLY);
++    if (fd >= 0)
++    {
++	if (ioctl (fd, VT_GETSTATE, &vts) == 0 &&
++	    ioctl (fd, KDGETMODE, &mode) == 0)
++	{
++	    if (mode == KD_GRAPHICS && suspendVT != 1)
++	    {
++		suspendVT = vts.v_active;
++		suspendVTValid = 1;
++		ioctl(fd, VT_ACTIVATE, 1);
++		ioctl(fd, VT_WAITACTIVE, 1);
++	    }
++	}
++	close (fd);
++    }
++    return 0;
++}
++
++int apm_resume_vt()
++{
++    int		    fd;
++
++    if (suspendVTValid)
++    {
++	fd = open("/dev/tty0", O_WRONLY);
++	if (fd >= 0)
++	{
++	    ioctl(fd, VT_ACTIVATE, suspendVT);
++	    close(fd);
++	}
++	suspendVTValid = 0;
++    }
++    return 0;
++}
++
+ 
+ /*
+  * Look up the device number of the apm_bios device.

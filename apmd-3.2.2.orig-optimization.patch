@@ -1,0 +1,11 @@
+--- apmd-3.2.2.orig/Makefile.orig	2009-03-28 08:23:09.000000000 +0100
++++ apmd-3.2.2.orig/Makefile	2009-03-28 08:23:09.000000000 +0100
+@@ -48,7 +48,7 @@
+ DESTDIR=
+ 
+ CC=gcc
+-CFLAGS=-O -g
++CFLAGS=$(RPM_OPT_FLAGS)
+ XTRACFLAGS=-Wall -pipe -I. -I/usr/src/linux/include \
+ 		-I/usr/src/linux-2.2/include -I /usr/src/linux-2.0/include \
+ 		-DVERSION=\"$(VERSION)\" \
