@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# chkconfig: 2345 26 74
+# description: apmd is used for monitoring battery status and logging it via \
+#	syslog(8). It can also be used for shutting down the machine when \
+#	the battery is low.
+# processname: apmd
+# config: /etc/sysconfig/suspend
+# clock: /etc/sysconfig/clock
+#
+### BEGIN INIT INFO
+# Provides: apmd
+# Default-Start: 2 3 4 5
+# Short-Description: Advanced power management (APM) daemon
+# Description: apmd is used for monitoring battery status and logging it via \
+#              syslog(8). It can also be used for shutting down the machine when \
+#	       the battery is low.
+### END INIT INFO
+
+# If APM isn't supported by the kernel, try loading the module...
+[ -e /proc/apm ] ||  ( grep -q apm /lib/modules/`uname -r`/modules.alias && /sbin/modprobe apm &>/dev/null )
+
+# Don't bother if /proc/apm still doesn't exist, kernel doesn't have
+# support for APM.
+[ -e /proc/apm ] || exit 0
+
+CONFIG=/etc/sysconfig/suspend
+
+# Source function library.
+. /etc/init.d/functions
+
+RETVAL=0
+
+start() {
+	echo -n $"Starting up APM daemon: "
+	test -r "$CONFIG" && . "$CONFIG"
+	daemon /usr/sbin/apmd -p $LOGPERCENTCHANGE -w $WARNPERCENT $ADDPARAMS
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/apmd
+	echo
+}
+
+stop() {
+	echo -n $"Shutting down APM daemon: "
+	killproc apmd
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/apmd
+	/sbin/modprobe -r apm &>/dev/null
+	echo
+}
+
+dostatus() {
+	status apmd
+	RETVAL=$?
+}
+
+restart() {
+	stop
+	start
+	RETVAL=$?
+}
+
+condrestart() {
+	[ -e /var/lock/subsys/apmd ] && restart || :
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	dostatus
+	;;
+  restart|reload)
+	restart
+	;;
+  condrestart)
+	condrestart
+	;;
+  *)
+	echo "Usage: apmd.init {start|stop|status|restart|reload|condrestart}"
+	exit 1
+esac
+
+exit $RETVAL

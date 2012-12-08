@@ -1,0 +1,43 @@
+diff -urN apmd-3.2.2.orig/Makefile apmd-3.2.2.orig-patched/Makefile
+--- apmd-3.2.2.orig/Makefile	2004-01-04 18:13:18.000000000 +1000
++++ apmd-3.2.2.orig-patched/Makefile	2012-08-28 03:20:33.409213809 +1100
+@@ -58,7 +58,7 @@
+ #CFLAGS=-O3 -m486 -fomit-frame-pointer
+ #LDFLAGS=-s
+ 
+-LIBTOOL=libtool --quiet
++LIBTOOL=libtool
+ LT_COMPILE = $(LIBTOOL) --mode=compile $(CC)
+ LT_LINK = $(LIBTOOL) --mode=link $(CC)
+ LT_INSTALL = $(LIBTOOL) --mode=install install
+@@ -72,7 +72,7 @@
+ 	$(LT_COMPILE) -c $(CPPFLAGS) $(CFLAGS) $(XTRACFLAGS) $<
+ 
+ %: %.o $(LIBAPM)
+-	$(LT_LINK) -o $@ $< $(LDFLAGS) $(LIBAPM)
++	$(LT_LINK) -o $@ .libs/$< $(LDFLAGS) .libs/$(LIBAPM)
+ 
+ xapm.o: xapm.c
+ 	$(LT_COMPILE) -c $(CPPFLAGS) $(CFLAGS) $(XTRACFLAGS) -DNARROWPROTO $<
+@@ -84,10 +84,10 @@
+ apmexists: apmexists.o
+ 
+ xapm: xapm.o $(LIBAPM)
+-	$(LT_LINK) -o $@ $< $(LDFLAGS) $(LIBAPM) $(XLDFLAGS) $(XLIBS)
++	$(LT_LINK) -o $@ .libs/$< $(LDFLAGS) .libs/$(LIBAPM) $(XLDFLAGS) $(XLIBS)
+ 
+ $(LIBAPM): apmlib.lo
+-	$(LT_LINK) -o $@ $< $(LIBAPM_FLAGS) $(LDFLAGS)
++	$(LT_LINK) -o .libs/$@ $< $(LIBAPM_FLAGS) $(LDFLAGS)
+ 
+ apmlib.lo: apmlib.c apm.h
+ 	$(LT_COMPILE) -c $(CPPFLAGS) $(CFLAGS) $(XTRACFLAGS) $<
+@@ -102,7 +102,7 @@
+ 	[ -d $(DESTDIR)$(SBINDIR)   ] || install -d $(DESTDIR)$(SBINDIR)
+ 	[ -d $(DESTDIR)$(LIBDIR)    ] || install -d $(DESTDIR)$(LIBDIR)
+ 	[ -d $(DESTDIR)$(INCDIR)    ] || install -d $(DESTDIR)$(INCDIR)
+-	$(LT_INSTALL) -m 644 $(LIBAPM)   $(DESTDIR)$(LIBDIR)
++	$(LT_INSTALL) -m 644 .libs/$(LIBAPM)   $(DESTDIR)$(LIBDIR)
+ 	$(LT_INSTALL)        apm         $(DESTDIR)$(BINDIR)
+ 	$(LT_INSTALL)        apmd        $(DESTDIR)$(SBINDIR)
+ 	$(LT_INSTALL)        xapm        $(DESTDIR)$(BINDIR)

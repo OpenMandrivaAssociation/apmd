@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/share/suspend-scripts/run_scripts $1 apm

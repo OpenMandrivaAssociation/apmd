@@ -4,13 +4,12 @@
 %define libname		%mklibname apm %{major}
 %define develname	%mklibname apm -d
 
-%define release	%mkrel 27
-%define version	3.2.2
-
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
-Name:		%{name}
-Version:	%{version}
-Release:	%{release}
+Name:		apmd
+Version:	3.2.2
+Release:	28
+License:	GPLv2+
+Group:		System/Servers
 Source:		ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.bz2
 Source1:	apmd.init
 Source3:	apmd_proxy
@@ -19,19 +18,16 @@ Patch1:		apmd-3.2.2.orig-graphicswitch.patch
 Patch2:		apmd-3.2.2.orig-optimization.patch
 Patch5:		apmd-3.2.2.orig-security.patch
 Patch9:		apmd-3.2.2.orig-proxy-timeout.patch
-License:	GPLv2+
-Group:		System/Servers
-BuildRequires:	libx11-devel
-BuildRequires:	libxaw-devel
-BuildRequires:	libxt-devel
+Patch10:	apmd-3.2.2-libtool.patch
+BuildRequires:	pkgconfig(x11)
+BuildRequires:	pkgconfig(xaw7)
+BuildRequires:	pkgconfig(xt)
 BuildRequires:	libtool
-BuildRoot:	%{_tmppath}/%{name}-root
 
 Requires(post):		rpm-helper
 Requires(preun):	rpm-helper
 
-Requires:	initscripts >= 5.5
-ExclusiveArch:	%{ix86} x86_64 ppc %mips %arm
+Requires:	initscripts
 
 %description
 APMD is a set of programs for controlling the Advanced Power 
@@ -55,11 +51,9 @@ linked with %{libname_orig}.
 %package -n %{develname}
 Summary:	Development library for %{libname_orig}
 Group:		Development/C
-Requires:	%{libname} = %{version}
+Requires:	%{libname} = %{version}-%{release}
 Provides:	%{libname_orig}-devel = %{version}-%{release}
-Obsoletes:	%{name}-devel
-Obsoletes:	%{mklibname apm 1 -d}
-Provides:	%{name}-devel
+Provides:	%{name}-devel = %{version}-%{release}
 
 %description -n %{develname}
 This package contains the developmeent library needed to compile
@@ -72,11 +66,12 @@ programs that use %{libname_orig}.
 %patch2 -p1
 %patch5 -p1
 %patch9 -p1
-echo "LIB = %_lib" > config.make
+%patch10 -p1
+echo "LIB = %{_lib}" > config.make
 
 %build
 %serverbuild
-make CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="%{ldflags} -s" PROXY_DIR=%{_sbindir}
+make CFLAGS="%{optflags}" LDFLAGS="%{ldflags} -s" PROXY_DIR=%{_sbindir}
 
 %install
 rm -rf %{buildroot}
@@ -91,17 +86,7 @@ install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/apmd
 install -m755 %{SOURCE3} -D %{buildroot}%{_sbindir}/apmd_proxy
 rm -f %{buildroot}%{_bindir}/on_ac_power
 
-%clean
-rm -rf %{buildroot}
-
-%if %mdkversion < 200900
-%post -n %{libname} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libname} -p /sbin/ldconfig
-%endif
-
-%post 
+%post
 %_post_service apmd
 
 %preun
@@ -111,7 +96,6 @@ rm -rf %{buildroot}
 /sbin/chkconfig --add apmd
 
 %files
-%defattr(-,root,root)
 %doc AUTHORS ChangeLog README apmsleep.README
 %{_mandir}/man?/*
 %{_bindir}/*
@@ -119,12 +103,19 @@ rm -rf %{buildroot}
 %config(noreplace) %{_initrddir}/apmd
 
 %files -n %{libname}
-%defattr(-,root,root)
 %{_libdir}/*.so.*
 
 %files -n %{develname}
-%defattr(-,root,root)
 %{_libdir}/*so
-%{_libdir}/*a
 %{_includedir}/*
+
+%changelog
+* Mon May 02 2011 Oden Eriksson <oeriksson@mandriva.com> 3.2.2-27mdv2011.0
++ Revision: 662784
+- mass rebuild
+
+* Wed Feb 02 2011 Funda Wang <fwang@mandriva.org> 3.2.2-26
++ Revision: 634995
+- rebuild
+- tighten BR
 
