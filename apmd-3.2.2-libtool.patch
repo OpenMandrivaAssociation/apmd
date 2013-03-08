@@ -6,7 +6,7 @@ diff -urN apmd-3.2.2.orig/Makefile apmd-3.2.2.orig-patched/Makefile
  #LDFLAGS=-s
  
 -LIBTOOL=libtool --quiet
-+LIBTOOL=libtool
++LIBTOOL=libtool --tag=CC
  LT_COMPILE = $(LIBTOOL) --mode=compile $(CC)
  LT_LINK = $(LIBTOOL) --mode=link $(CC)
  LT_INSTALL = $(LIBTOOL) --mode=install install

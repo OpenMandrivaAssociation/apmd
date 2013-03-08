@@ -1,8 +1,6 @@
-%define name		apmd
-%define libname_orig	libapm
-%define major		1
-%define libname		%mklibname apm %{major}
-%define develname	%mklibname apm -d
+%define major	1
+%define libname	%mklibname apm %{major}
+%define devname	%mklibname apm -d
 
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
 Name:		apmd
@@ -10,7 +8,8 @@ Version:	3.2.2
 Release:	28
 License:	GPLv2+
 Group:		System/Servers
-Source:		ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.bz2
+Url:		ftp://ftp.debian.org/debian/pool/main/a/apmd
+Source0:	ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.gz
 Source1:	apmd.init
 Source3:	apmd_proxy
 Patch0:		apmd-3.2.2.orig-lib64.patch
@@ -19,14 +18,12 @@ Patch2:		apmd-3.2.2.orig-optimization.patch
 Patch5:		apmd-3.2.2.orig-security.patch
 Patch9:		apmd-3.2.2.orig-proxy-timeout.patch
 Patch10:	apmd-3.2.2-libtool.patch
+
+BuildRequires:	libtool
 BuildRequires:	pkgconfig(x11)
 BuildRequires:	pkgconfig(xaw7)
 BuildRequires:	pkgconfig(xt)
-BuildRequires:	libtool
-
-Requires(post):		rpm-helper
-Requires(preun):	rpm-helper
-
+Requires(post,preun):	rpm-helper
 Requires:	initscripts
 
 %description
@@ -40,33 +37,27 @@ Install the apmd package if you need to control the APM system
 on your laptop.
 
 %package -n %{libname}
-Summary:	Main library for %{libname_orig}
+Summary:	Main library for %{name}
 Group:		System/Libraries
-Provides:	%{libname_orig} = %{version}-%{release}
 
 %description -n %{libname}
 This package contains the library needed to run programs dynamically
-linked with %{libname_orig}.
+linked with %{name}.
 
-%package -n %{develname}
-Summary:	Development library for %{libname_orig}
+%package -n %{devname}
+Summary:	Development library for %{name}
 Group:		Development/C
 Requires:	%{libname} = %{version}-%{release}
-Provides:	%{libname_orig}-devel = %{version}-%{release}
 Provides:	%{name}-devel = %{version}-%{release}
 
-%description -n %{develname}
+%description -n %{devname}
 This package contains the developmeent library needed to compile
-programs that use %{libname_orig}.
+programs that use %{name}.
 
 %prep
-%setup -q -n apmd-%{version}.orig
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch5 -p1
-%patch9 -p1
-%patch10 -p1
+%setup -qn apmd-%{version}.orig
+%apply_patches
+
 echo "LIB = %{_lib}" > config.make
 
 %build
@@ -74,12 +65,13 @@ echo "LIB = %{_lib}" > config.make
 make CFLAGS="%{optflags}" LDFLAGS="%{ldflags} -s" PROXY_DIR=%{_sbindir}
 
 %install
-rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/apm-scripts
 
 %makeinstall_std PREFIX=%{_prefix} MANDIR=%{_mandir}
 
-for i in apm.1 apmsleep.1;do install -m644 $i -D %{buildroot}/%{_mandir}/man1/$i;done
+for i in apm.1 apmsleep.1;
+	do install -m644 $i -D %{buildroot}/%{_mandir}/man1/$i;
+done
 install -m644 apmd.8 -D %{buildroot}/%{_mandir}/man8/apmd.8
 
 install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/apmd
@@ -92,30 +84,17 @@ rm -f %{buildroot}%{_bindir}/on_ac_power
 %preun
 %_preun_service apmd
 
-%triggerpostun -- apmd <= 3.0final-6
-/sbin/chkconfig --add apmd
-
 %files
 %doc AUTHORS ChangeLog README apmsleep.README
-%{_mandir}/man?/*
+%config(noreplace) %{_initrddir}/apmd
 %{_bindir}/*
 %{_sbindir}/*
-%config(noreplace) %{_initrddir}/apmd
+%{_mandir}/man?/*
 
 %files -n %{libname}
-%{_libdir}/*.so.*
+%{_libdir}/libapm.so.%{major}*
 
-%files -n %{develname}
+%files -n %{devname}
 %{_libdir}/*so
 %{_includedir}/*
-
-%changelog
-* Mon May 02 2011 Oden Eriksson <oeriksson@mandriva.com> 3.2.2-27mdv2011.0
-+ Revision: 662784
-- mass rebuild
-
-* Wed Feb 02 2011 Funda Wang <fwang@mandriva.org> 3.2.2-26
-+ Revision: 634995
-- rebuild
-- tighten BR
 
