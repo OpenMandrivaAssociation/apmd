@@ -6,7 +6,6 @@
 #	the battery is low.
 # processname: apmd
 # config: /etc/sysconfig/suspend
-# clock: /etc/sysconfig/clock
 #
 ### BEGIN INIT INFO
 # Provides: apmd
