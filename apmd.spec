@@ -1,6 +1,7 @@
 %define major	1
 %define libname	%mklibname apm %{major}
 %define devname	%mklibname apm -d
+%define _disable_lto 1
 
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
 Name:		apmd
@@ -9,7 +10,7 @@ Release:	38
 License:	GPLv2+
 Group:		System/Servers
 Url:		ftp://ftp.debian.org/debian/pool/main/a/apmd
-Source0:	ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.gz
+Source0:	ftp://ftp.debian.org/debian/pool/main/a/apmd/%{name}_%{version}.orig.tar.bz2
 Source1:	apmd.init
 Source3:	apmd_proxy
 Patch0:		apmd-3.2.2.orig-lib64.patch
