@@ -6,7 +6,7 @@
 Summary:	Advanced Power Management (APM) BIOS utilities for laptops
 Name:		apmd
 Version:	3.2.2
-Release:	38
+Release:	39
 License:	GPLv2+
 Group:		System/Servers
 Url:		ftp://ftp.debian.org/debian/pool/main/a/apmd
