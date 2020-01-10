@@ -57,7 +57,7 @@ programs that use %{name}.
 
 %prep
 %setup -qn apmd-%{version}.orig
-%apply_patches
+%autopatch -p1
 
 echo "LIB = %{_lib}" > config.make
 
